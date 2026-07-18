@@ -1,21 +1,20 @@
 #!/usr/bin/env bash
 # test-sandbox — installer shim.
 #
-# Thin wrapper around bin/install.js (unified Node installer). Every flag you'd
-# pass to bin/install.js can be passed here; we just forward them.
+# Two paths:
+#   * Local clone: run the bundled Node installer directly (offline-safe).
+#   * curl | bash: fetch bin/install.js from GitHub raw into a temp dir, then
+#     run it. No npx, no package.json required.
 #
 # One-line install:
 #   curl -fsSL https://raw.githubusercontent.com/mathofjesus/docker-sandbox/main/install.sh | bash
 #
 # Local clone:
 #   bash install.sh [flags]
-#
-# Why a Node installer? It runs everywhere a harness might live (Claude Code,
-# Cursor, Codex, Hermes) and resolves each tool's skills directory cross-platform
-# without bash/PowerShell quoting bugs.
 set -euo pipefail
 
 REPO="mathofjesus/docker-sandbox"
+RAW="https://raw.githubusercontent.com/${REPO}/main"
 
 # Require Node >=18.
 if ! command -v node >/dev/null 2>&1; then
@@ -24,7 +23,6 @@ if ! command -v node >/dev/null 2>&1; then
   echo "  Linux:   see https://nodejs.org or use nvm (https://github.com/nvm-sh/nvm)" >&2
   exit 1
 fi
-
 NODE_MAJOR=$(node -p "process.versions.node.split('.')[0]")
 if [ "$NODE_MAJOR" -lt 18 ]; then
   echo "test-sandbox: Node $NODE_MAJOR too old. Need Node >=18." >&2
@@ -32,17 +30,15 @@ if [ "$NODE_MAJOR" -lt 18 ]; then
   exit 1
 fi
 
-# If we're inside the repo clone, run the local installer directly — saves the
-# npx round-trip and keeps offline installs working.
+# Path 1: inside a repo clone — use the local installer.
 here="$(cd "$(dirname "${BASH_SOURCE[0]:-}")" 2>/dev/null && pwd)" || here=""
 if [ -n "$here" ] && [ -f "$here/bin/install.js" ]; then
   exec node "$here/bin/install.js" "$@"
 fi
 
-# Curl-pipe path: delegate to npx (npm 7+ forwards trailing args to the pkg).
-if ! command -v npx >/dev/null 2>&1; then
-  echo "test-sandbox: npx required (ships with Node >=18). Reinstall Node.js." >&2
-  exit 1
-fi
-
-exec npx -y "github:$REPO" "$@"
+# Path 2: curl | bash — fetch installer from GitHub raw.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+echo "test-sandbox: fetching installer from GitHub (${REPO})..."
+curl -fsSL "${RAW}/bin/install.js" -o "$tmp/install.js"
+exec node "$tmp/install.js" --repo "$REPO" "$@"

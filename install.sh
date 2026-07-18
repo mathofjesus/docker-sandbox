@@ -42,3 +42,4 @@ trap 'rm -rf "$tmp"' EXIT
 echo "test-sandbox: fetching installer from GitHub (${REPO})..."
 curl -fsSL "${RAW}/bin/install.js" -o "$tmp/install.js"
 exec node "$tmp/install.js" --repo "$REPO" "$@"
+

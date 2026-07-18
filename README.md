@@ -14,15 +14,41 @@ demonstrated by [anthropics/skills](https://github.com/anthropics/skills): each
 skill is a self-contained folder with a `SKILL.md` (YAML frontmatter +
 instructions) plus optional `scripts/`, `references/`, and `examples/`.
 
+## Install
+
+One-line install (fetches the installer from GitHub, no clone needed):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/mathofjesus/docker-sandbox/main/install.sh | bash
+```
+
+This auto-detects your agent harness (Claude Code, Cursor, Codex, Hermes) and
+copies `skills/test-sandbox/` into its skills directory. Flags:
+
+```bash
+bash install.sh --list            # show detected harness + target, then exit
+bash install.sh --target <dir>   # force a destination directory
+```
+
+From a local clone you can also run the Node installer directly:
+
+```bash
+node bin/install.js               # auto-detect harness
+node bin/install.js --target ./out
+```
+
 ## Repository layout
 
 ```
+install.sh                      # curl|bash installer shim (no npx needed)
+bin/
+  install.js                   # Node installer: detect harness + copy skill
 skills/
   test-sandbox/
-    SKILL.md                  # instructions + metadata Claude/agents load
+    SKILL.md                  # instructions + metadata agents load
     LICENSE.txt               # Apache-2.0
     scripts/
-      run.sh                  # black-box runner (--help for usage)
+      run.sh                  # black-box test runner (--help for usage)
     references/
       validation.md           # recipes exercised on real projects, with results
 ```
@@ -57,13 +83,13 @@ is written to be loaded by agent harnesses (Claude Code, Cursor, Codex, Hermes).
 
 **Claude Code** — register this repo as a plugin marketplace, then install:
 
-```
+```bash
 /plugin marketplace add mathofjesus/docker-sandbox
 ```
 
-**Other harnesses** — copy `skills/test-sandbox/` into your skills directory. The
-harness loads it when a task mentions throwaway prototypes, mockups, quick
-tests, PoCs, spikes, or isolated testing.
+**Other harnesses** — copy `skills/test-sandbox/` into your skills directory, or
+use the installer above. The harness loads it when a task mentions throwaway
+prototypes, mockups, quick tests, PoCs, spikes, or isolated testing.
 
 ## Requirements
 
@@ -73,7 +99,9 @@ Docker 20.10+, ~6 GB free RAM, 2 vCPU.
 
 The recipes were exercised against real projects inside containers (Maven
 multi-module → BUILD SUCCESS; Preact/Vitest → 16 tests; Expo/Jest → 35 tests).
-See [`skills/test-sandbox/references/validation.md`](./skills/test-sandbox/references/validation.md).
+The `run.sh` installer path was tested end-to-end (local clone and `curl | bash`
+from GitHub). See
+[`skills/test-sandbox/references/validation.md`](./skills/test-sandbox/references/validation.md).
 
 ## Disclaimer
 

@@ -58,7 +58,7 @@ is written to be loaded by agent harnesses (Claude Code, Cursor, Codex, Hermes).
 **Claude Code** — register this repo as a plugin marketplace, then install:
 
 ```
-/plugin marketplace add mathofjesus/test-sandbox
+/plugin marketplace add mathofjesus/docker-sandbox
 ```
 
 **Other harnesses** — copy `skills/test-sandbox/` into your skills directory. The
